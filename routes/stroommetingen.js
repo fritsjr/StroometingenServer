@@ -1,47 +1,53 @@
 var express = require('express');
 var router = express.Router();
-var mongojs = require('mongojs');
-var db = mongojs('mongodb://frits.jr:test@ds123370.mlab.com:23370/karelsswagstroom', ['Stroommetingen']);
+var mysql      = require('mysql');
 
-// Get all
-router.get('/stroommetingen', function (req, res, next) {
-    db.Stroommetingen.find(function (err, stroommetingen) {
-        if(err) res.send(err);
-        res.json(stroommetingen);
-    })
+router.get('/', function(req, res, next) {
+    var connection = mysql.createConnection({
+        host     : 'stroommeterdb.curonzpe7k1r.eu-central-1.rds.amazonaws.com',
+        user     : 'newuser',
+        password : 'Password?1',
+        database : 'stroommeter_DB'
+    });
+
+    connection.connect();
+
+    var queryURL = "SELECT * FROM meetwaarde;";
+
+    connection.query(queryURL, function(err, rows, fields) {
+        if (!err){
+            console.log('The solution is: ', rows);
+            res.json(rows);
+        }
+        else
+            console.log('Error while performing Query.');
+    });
+    connection.end();
 });
 
-// Get single by object id
-router.get('/stroommetingen/:id', function (req, res, next) {
-    db.Stroommetingen.findOne({_id: mongojs.ObjectID(req.params.id)}, function (err, stroommeting) {
-        if(err) res.send(err);
-        res.json(stroommeting);
-    })
+router.post('/', function (req, res, next) {
+    var connection = mysql.createConnection({
+        host     : 'stroommeterdb.curonzpe7k1r.eu-central-1.rds.amazonaws.com',
+        user     : 'newuser',
+        password : 'Password?1',
+        database : 'stroommeter_DB'
+    });
+
+    connection.connect();
+
+    var value = req.query.value;
+
+    var queryURL = "INSERT INTO `stroommeter_DB`.`meetwaarde` (`meetpunt_id`, `id`, `type`, `value`) VALUES ('1', '', 'elektriciteti', '" + value + "');";
+
+    connection.query(queryURL, function(err, rows, fields) {
+        if (!err){
+            console.log('The solution is: ', rows);
+            res.json(rows);
+        }
+        else
+            console.log('Error while performing Query.');
+    });
+    connection.end();
 });
 
-// Add new
-router.post('/stroommeting', function (req, res, next) {
-    console.log("Received" + req.body)
-    var stroommeting = req.body;
-    // if(!abonnement.Person_ID ||  !abonnement.MB || !abonnement.Minutes || !abonnement.SMS ){
-    //     res.status(400);
-    //     res.json({
-    //         "error": "Bad data"
-    //     })
-    // } else{
-    db.Stroommetingen.save(stroommeting, function (err, stroommeting) {
-        if(err) res.send(err);
-        res.json(stroommeting);
-    })
-    // }
-});
-
-// Delete one by object id
-router.delete('/stroommetingen/:id', function (req, res, next) {
-    db.Stroommetingen.remove({_id: mongojs.ObjectID(req.params.id)}, function (err, stroommeting) {
-        if(err) res.send(err);
-        res.json(stroommeting);
-    })
-});
-
-module.exports= router;
+module.exports = router;
