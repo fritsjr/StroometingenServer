@@ -12,8 +12,7 @@ router.get('/', function(req, res, next) {
 
     connection.connect();
 
-    var queryURL = "SELECT * FROM meetwaarde;";
-
+    var queryURL = "SELECT DATE_FORMAT(datum, '%Y-%m-%d') AS the_date, COUNT(*) AS count FROM meetwaarde where datum between date_sub(now(),INTERVAL 31 DAY) and now() GROUP  BY the_date;";
 
     connection.query(queryURL, function(err, rows, fields) {
         if (!err){
@@ -21,27 +20,26 @@ router.get('/', function(req, res, next) {
 
             // var jsonRes = res.json(rows);
 
-            var date = rows[0].datum;
-            var hours = date.getHours();
-
-            var myCounter = new Map();
-
-            for(var i = 0; i <24; i++){
-                myCounter.set(i, 0);
-            }
-
-            //loop over the rows
-            for(var i = 0; i < rows.length; i++){
-                var log = rows[i].datum;
-                var val = rows[i].datum.getHours();
-                console.log("val: " + val);
-                myCounter.set(val, (myCounter.get(val) + 1));
-            }
+            // var date = rows[0].datum;
+            // var day = date.getDay();
+            //
+            // var myCounter = new Map();
+            //
+            // for(var i = 0; i <31; i++){
+            //     myCounter.set(i, 0);
+            // }
+            //
+            // //loop over the rows
+            // for(var i = 0; i < rows.length; i++){
+            //     var val = rows[i].datum.getDate();
+            //     console.log("day: " + val);
+            //     myCounter.set(val, (myCounter.get(val) + 1));
+            // }
 
             var arr = [];
 
-            for(var i = 0; i < 24; i++){
-                arr[i] = myCounter.get(i);
+            for(var i = 0; i < 31; i++){
+                arr[i] = rows[i].count;
             }
 
             res.json(arr);
